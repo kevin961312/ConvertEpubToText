@@ -38,3 +38,28 @@ class ConvertEpubToText:
             with io.open(f"{self.pathSave}/{NameFile}.txt", mode='a', encoding='utf-8') as file:
                 file.write(TextbyFile)
                 file.close()
+                
+    def SplitTextToWords(self, string, lenString):
+        words = string.split()
+        grouped_words = [' '.join(words[i: i + lenString]) for i in range(0, len(words), lenString)]
+        return grouped_words
+    
+    def ConvertOneFile(self):
+        for bookname in self.listBooks:
+            Book = epub.read_epub(self.pathEpubs+bookname)
+            ItemsDocument = list(Book.get_items_of_type(ebooklib.ITEM_DOCUMENT))
+            TextofEpub = ""
+            for item in ItemsDocument:
+                TextofEpub += self.ChapterToStr(item)
+            NameFile = bookname.replace('.epub', '')    
+            TextComplet = "".join(TextofEpub.splitlines())
+            TextbyFile = self.Cleanofstring(TextComplet)
+            TextbyFile = TextbyFile.replace("...","$Tres")
+            ListCsv = self.SplitTextToWords(TextbyFile,100)
+            if(not os.path.isdir("./" + self.pathSave)):
+                os.mkdir("./" + self.pathSave) 
+            print(NameFile)
+            for prhase in ListCsv:
+                with io.open(f"{self.pathSave}/AllPrhase.txt", mode='a', encoding='utf-8') as file:
+                    file.write(prhase.replace('$Tres','...').rstrip()+".\n")
+                    file.close()
